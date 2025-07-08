@@ -1,0 +1,50 @@
+# Multi-server test configuration
+manager:
+  name: "multi-test-manager"
+  log_level: "info"
+
+servers:
+  playwright:
+    source: "npm:@playwright/mcp"
+    transport: "stdio"
+    enabled: true
+    auto_install: true
+    config:
+      browser: "chrome"
+      headless: true
+
+  filesystem:
+    source: "npm:@modelcontextprotocol/server-filesystem"
+    transport: "stdio"
+    enabled: true
+    auto_install: true
+    config:
+      allowed_paths: ["/home/nick/Documents"]
+
+clients:
+  claude_desktop:
+    identify_by:
+      - client_info.name: "claude-desktop"
+    allow:
+      - server: "playwright"
+        tools: ["*"]
+      - server: "filesystem"
+        tools: ["read_file", "list_directory"]  # Read-only for Claude
+    deny:
+      - server: "filesystem"
+        tools: ["write_file", "create_directory"]
+
+  vscode:
+    identify_by:
+      - client_info.name: "vscode-mcp"
+    allow:
+      - server: "playwright"
+        tools: ["*"]
+      - server: "filesystem"
+        tools: ["*"]  # Full access for VSCode
+
+runtime:
+  max_concurrent_requests: 50
+  request_timeout: 60
+  health_check_enabled: false
+  auto_restart_failed_servers: true

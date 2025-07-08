@@ -1,0 +1,102 @@
+# Universal installer test configuration
+manager:
+  name: "universal-test-manager"
+  log_level: "info"
+
+servers:
+  # NPM package server
+  playwright:
+    source: "npm:@playwright/mcp"
+    transport: "stdio"
+    enabled: true
+    auto_install: true
+    config:
+      headless: true
+      browser: "chrome"
+
+  # Context7 MCP - Documentation and code examples server
+  context7:
+    source: "npm:@upstash/context7-mcp"
+    transport: "stdio"
+    enabled: true
+    auto_install: true
+    config:
+      # Optional: Set minimum token count for documentation retrieval
+      DEFAULT_MINIMUM_TOKENS: 10000
+
+  # Obsidian MCP - Obsidian notes integration
+  obsidian:
+    source: "uvx:mcp-obsidian"
+    transport: "stdio"
+    enabled: true
+    auto_install: true
+    config:
+      # Set your Obsidian REST API configuration
+      OBSIDIAN_API_KEY: "your_api_key_here"
+      OBSIDIAN_HOST: "your_obsidian_host"
+
+  # Python pip package server (example)
+  # filesystem:
+  #   source: "pip:mcp-server-filesystem"
+  #   transport: "stdio"
+  #   enabled: false
+  #   auto_install: true
+
+  # GitHub repository server (example)
+  # custom-server:
+  #   source: "github:anthropics/mcp-examples"
+  #   branch: "main"
+  #   transport: "stdio" 
+  #   enabled: false
+  #   auto_install: true
+
+  # Local development server (example)
+  # dev-server:
+  #   source: "local:./my-dev-server"
+  #   transport: "stdio"
+  #   enabled: false
+  #   auto_install: true
+
+  # Binary download (example)
+  # binary-server:
+  #   source: "https://releases.example.com/mcp-server"
+  #   transport: "stdio"
+  #   enabled: false
+  #   auto_install: true
+
+  # Universal package manager (example)
+  # uvx-server:
+  #   source: "uvx:mcp-tools"
+  #   transport: "stdio"
+  #   enabled: false
+  #   auto_install: true
+
+clients:
+  claude_desktop:
+    identify_by:
+      - client_info.name: "claude-desktop"
+    allow:
+      - server: "playwright"
+        tools: ["*"]
+      - server: "context7"
+        tools: ["*"]
+      - server: "obsidian"
+        tools: ["*"]
+    deny_all_except_allowed: true
+
+  default:
+    identify_by: []
+    allow:
+      - server: "playwright"
+        tools: ["*"]
+      - server: "context7"
+        tools: ["*"]
+      - server: "obsidian"
+        tools: ["*"]
+    deny_all_except_allowed: false
+
+runtime:
+  max_concurrent_requests: 50
+  request_timeout: 60
+  health_check_enabled: false
+  auto_restart_failed_servers: true

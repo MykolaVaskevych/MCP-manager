@@ -1,0 +1,128 @@
+# MCP Manager Configuration Example
+# Copy this file to mcp-manager.yaml and customize for your setup
+
+# Manager settings
+manager:
+  name: "central-mcp-manager"
+  version: "1.0.0"
+  log_level: "info"  # debug, info, warning, error
+
+# MCP Server Definitions
+servers:
+  # Weather service example (NPM package)
+  weather:
+    source: "npm:@weather/mcp-weather"
+    version: "^1.0.0"  # Optional, defaults to latest
+    transport: "stdio"
+    config:
+      api_key: "${WEATHER_API_KEY}"  # Environment variable
+    health_check:
+      method: "tool_call"
+      tool: "get_weather"
+      args: {"location": "test"}
+      interval: 300  # seconds
+    auto_install: true
+    enabled: true
+    
+  # Filesystem service example (GitHub repository)
+  filesystem:
+    source: "github:anthropics/mcp-filesystem"
+    branch: "main"  # Optional
+    transport: "stdio"
+    config:
+      allowed_paths: ["/tmp", "/home/user/documents"]
+      max_file_size: 10485760  # 10MB
+    auto_install: true
+    enabled: true
+    
+  # Database service example (local development)
+  database:
+    source: "local:/tmp/custom-db-mcp"  # Use absolute path for validation
+    transport: "stdio"
+    config:
+      connection_string: "${DATABASE_URL}"
+    enabled: false  # Disabled by default
+    
+  # Example of an SSE-based server
+  web_service:
+    source: "npm:@web/mcp-service"
+    transport: "sse"
+    endpoint: "http://localhost:3001/sse"
+    enabled: false
+
+# Client Access Rules
+clients:
+  # VSCode MCP extension
+  vscode:
+    identify_by:
+      - client_info.name: "vscode-mcp"
+      - transport_type: "stdio"
+    allow:
+      - server: "filesystem"
+        tools: ["read_file", "write_file", "list_directory", "create_file"]
+        resources: ["file://*"]
+      - server: "database"
+        tools: ["query", "schema", "list_tables"]
+    deny:
+      - server: "weather"  # No weather access for VSCode
+        
+  # Claude Desktop
+  claude_desktop:
+    identify_by:
+      - client_info.name: "claude-desktop"
+      - client_info.name: "Claude Desktop*"  # Wildcard matching
+    allow:
+      - server: "weather"
+        tools: ["get_weather", "get_forecast", "get_alerts"]
+      - server: "filesystem"
+        tools: ["read_file", "list_directory"]  # Read-only access
+        resources: ["file:///home/user/documents/*"]
+    deny:
+      - server: "database"  # No database access for Claude
+        
+  # Web interface
+  web_client:
+    identify_by:
+      - transport_type: "sse"
+      - header.User-Agent: "*Web*"
+    allow:
+      - server: "weather"
+        tools: ["get_weather"]
+      - server: "web_service"
+        tools: ["*"]  # All tools from web service
+    deny_all_except_allowed: true  # Strict mode
+        
+  # Default fallback for unidentified clients
+  default:
+    identify_by: []  # Matches any client not matched above
+    allow:
+      - server: "weather"
+        tools: ["get_weather"]  # Basic weather only
+    deny_all_except_allowed: true
+
+# Installation Sources Configuration
+sources:
+  npm:
+    registry: "https://registry.npmjs.org"
+    auth_token: "${NPM_TOKEN}"  # Optional, for private packages
+  github:
+    base_url: "https://api.github.com"
+    auth_token: "${GITHUB_TOKEN}"  # Optional, for private repos
+  local:
+    base_path: "./mcp-servers"  # Base directory for local servers
+
+# Runtime Settings
+runtime:
+  max_concurrent_requests: 100
+  request_timeout: 30  # seconds
+  backend_pool_size: 10
+  health_check_enabled: true
+  metrics_enabled: true
+  auto_restart_failed_servers: true
+  cache_ttl: 300  # seconds (5 minutes)
+
+# Environment Variables Reference:
+# WEATHER_API_KEY - API key for weather service
+# DATABASE_URL - Database connection string
+# NPM_TOKEN - NPM authentication token (optional)
+# GITHUB_TOKEN - GitHub authentication token (optional)

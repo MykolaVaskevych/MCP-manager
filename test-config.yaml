@@ -1,0 +1,25 @@
+# Simple test configuration using local weather MCP
+manager:
+  name: "test-mcp-manager"
+  log_level: "info"
+
+servers:
+  weather:
+    source: "local:."  # Use current directory (where main.py is)
+    transport: "stdio"
+    enabled: true
+    auto_install: false  # Don't try to install, it's already here
+
+clients:
+  default:
+    identify_by: []
+    allow:
+      - server: "weather"
+        tools: ["*"]  # Allow all tools
+    deny_all_except_allowed: false
+
+runtime:
+  max_concurrent_requests: 10
+  request_timeout: 30
+  health_check_enabled: false  # Disable for testing
+  auto_restart_failed_servers: false
