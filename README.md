@@ -21,7 +21,12 @@ with fine-grained access control.
 
    ```bash
    cd MCP-manager
-   pip install -e .
+   pip install -e.
+   ```
+or
+ ```bash
+   cd MCP-manager
+   uv sync
    ```
 
 2. **Create configuration**:
