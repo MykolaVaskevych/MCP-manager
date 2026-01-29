@@ -1,4 +1,4 @@
-# MCP Manager
+# MCP Manager (archived, just use docker mcp)
 
 A centralized MCP (Model Context Protocol) server management and routing system
 that allows you to manage multiple MCP servers through a single interface
